@@ -1,0 +1,39 @@
+{
+  "food": [
+    {
+      "id": 1,
+      "missy_comment": "I really like it a lot",
+      "name": "steak"
+    },
+    {
+      "id": 2,
+      "missy_comment": "I can live without it",
+      "name": "kibble"
+    },
+    {
+      "id": 3,
+      "missy_comment": "I really like it a lot",
+      "name": "chicken"
+    }
+  ],
+  "missy_food_schedule": [
+    {
+      "date": 20220228,
+      "food": 1,
+      "missy_grumpiness": 0,
+      "quantity": 2.0
+    },
+    {
+      "date": 20220227,
+      "food": 1,
+      "missy_grumpiness": 10,
+      "quantity": 4.0
+    },
+    {
+      "date": 20220226,
+      "food": 3,
+      "missy_grumpiness": 1,
+      "quantity": 6.0
+    }
+  ]
+}
