@@ -13,6 +13,18 @@ pub struct Args{
 
     #[arg(short, long)]
     pub query: Option<String>,
+
+    #[arg(short, long)]
+    pub command_off: Option<bool>,
+
+    #[arg(short, long)]
+    pub descripton_off: Option<bool>,
+
+    #[arg(short, long)]
+    pub example_off: Option<bool>,
+
+    #[arg(short, long)]
+    pub gotcha_off: Option<bool>,
 }
 
 impl Args {
