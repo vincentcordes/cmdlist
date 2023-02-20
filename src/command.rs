@@ -16,7 +16,6 @@ impl Command {
         }
 
         if command.description.is_some(){
-
             println!("    Description: {}",
                      command.description.unwrap().bright_magenta().italic());
         }
@@ -30,3 +29,5 @@ impl Command {
         println!();
     }
 }
+
+

@@ -30,8 +30,8 @@ pub struct Args{
 impl Args {
     pub fn set_path(&mut self) {
         match &self.path {
-            None => self.path = Some(std::path::PathBuf::from("data.json")),  // std::path::PathBuf::from("data.json"),
-            Some(_) => (), // return std::path::PathBuf::from(path),
+            None => self.path = Some(std::path::PathBuf::from("data.json")),
+            Some(_) => (),
         }
     }
 }
