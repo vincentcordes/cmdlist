@@ -1,25 +1,27 @@
-mod utilities;
+mod app_data;
+mod arg_parse;
 mod command;
 mod command_parse;
-mod arg_parse;
-mod app_data;
+mod utilities;
 //use utilities::*;
+use crate::app_data::*;
+use crate::arg_parse::*;
 use crate::command::Command;
 use crate::command_parse::*;
-use crate::arg_parse::*;
-use crate::app_data::*;
-use anyhow::{Context, Result, Error};
-
+use anyhow::{Context, Error, Result};
 
 fn main() -> Result<(), Error> {
-    let args = parse_args()
-        .with_context(|| format!("Argument parse failed!"))?;
+    let mut args = parse_args().with_context(|| format!("Argument parse failed!"))?;
 
-    create_config_directory()
-        .with_context(|| format!("Unable to create default configuration"))?;
+    let default_path = application_defaults()
+        .with_context(|| format!("Unable to create default configuration!"))?;
 
-    let commands = parse_commands(&args)
-        .with_context(|| format!("Failed to build command list!"))?;
+    if args.path.is_none() {
+        args.path = default_path;
+    }
+
+    let commands =
+        parse_commands(&args).with_context(|| format!("Failed to build command list!"))?;
 
     for cmd in commands {
         Command::print_command(cmd);
