@@ -1,3 +1,4 @@
+use crate::Command;
 use anyhow::{Context, Error, Ok};
 use dirs::config_dir;
 use std::env;
@@ -57,25 +58,35 @@ fn build_default_data_file(app_dir: &PathBuf) -> Result<PathBuf, Error> {
 }
 
 fn build_file(path: &PathBuf) -> Result<(), Error> {
-    let data = r#"
-    {
-        "commands":[
-            {
-                "command": "ls",
-                "description": "lists files",
-                "example": "ls",
-                "gotchas": "none - don't typo"
-            },
-            {
-                "command": "exec",
-                "description": "lists files",
-                "example": "exec bash",
-                "gotchas": "none - don't typo"
-            }
-        ]
-    }
-    "#;
+    let mut data: Vec<Command> = vec![];
+
+    let mut examples1: Vec<Option<String>> = vec![];
+    examples1.push(Some(String::from("ls")));
+    examples1.push(Some(String::from("ls -l")));
+    examples1.push(Some(String::from("ls -a")));
+    let cmd1 = Command {
+        command: Some(String::from("ls")),
+        description: Some(String::from("Lists  directory contents.")),
+        examples: examples1,
+        gotchas: Some(String::from("")),
+    };
+
+    let mut examples2: Vec<Option<String>> = vec![];
+    examples2.push(Some(String::from("cd")));
+    examples2.push(Some(String::from("cd ..")));
+    examples2.push(Some(String::from("cd /")));
+    let cmd2 = Command {
+        command: Some(String::from("cd")),
+        description: Some(String::from("Changes working directory.")),
+        examples: examples2,
+        gotchas: Some(String::from("")),
+    };
+
+    data.push(cmd1);
+    data.push(cmd2);
+
+    let data_as_json = serde_json::to_string_pretty(&data)?;
     let mut file = File::create(path)?;
-    file.write_all(data.as_bytes())?;
+    file.write_all(data_as_json.as_bytes())?;
     Ok(())
 }

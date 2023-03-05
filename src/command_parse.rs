@@ -1,8 +1,8 @@
 use crate::arg_parse::Args;
 use crate::command::Command;
-use crate::utilities::*;
+//use crate::utilities::*;
 use anyhow::{Context, Error, Result};
-use serde_json::Value;
+//use serde_json::Value;
 
 pub fn parse_commands(args: &Args) -> Result<Vec<Command>, Error> {
     let file_text =
@@ -17,59 +17,58 @@ pub fn read_file(path: &std::path::PathBuf) -> Result<String, Error> {
 }
 
 pub fn build_command_list(args: &Args, file_text: &String) -> Result<Vec<Command>, Error> {
-    let json_text = serde_json::from_str::<Value>(&file_text)
-        .with_context(|| format!("Invalid json format!"))?;
+    let mut commands: Vec<Command> = serde_json::from_str(&file_text)?;
 
-    let elements_count = json_text["commands"]
-        .as_array()
-        .with_context(|| format!("Unable to find 'commands' section in data file!"))?
-        .len();
+    // switches for query
+    let mut use_query = false;
+    let mut query = String::from("");
+    if args.query.is_some() {
+        use_query = true;
+        query = args.query.clone().unwrap();
+    }
 
-    let mut commands: Vec<Command> = vec![];
+    if use_query {
+        commands.retain(|c| check_command_for_query(c, &query));
+    }
 
-    for index in 0..elements_count {
-        let cmd = &json_text["commands"][index]["command"];
-        let cmd = trim_quotes(cmd.to_string());
-        let des = &json_text["commands"][index]["description"];
-        let des = trim_quotes(des.to_string());
-        let exa = &json_text["commands"][index]["example"];
-        let exa = trim_quotes(exa.to_string());
-        let got = &json_text["commands"][index]["gotchas"];
-        let got = trim_quotes(got.to_string());
+    Ok(commands)
+}
 
-        let mut command = Command {
-            ..Default::default()
-        };
-
-        set_command_from_flags(
-            &mut command,
-            &args,
-            cmd.clone(),
-            des.clone(),
-            exa.clone(),
-            got.clone(),
-        );
-
-        let mut add_command: bool = false;
-
-        if args.query.is_some() {
-            add_command = check_field_for_query(
-                &mut command,
-                &args.query.clone().unwrap(),
-                cmd.clone(),
-                des.clone(),
-                exa.clone(),
-                got.clone(),
-            );
-        } else {
-            add_command = true;
-        }
-
-        if add_command {
-            commands.push(command);
+fn check_command_for_query(command: &Command, query: &String) -> bool {
+    let mut command_contains = false;
+    if command.command.is_some() {
+        let cmd = command.command.clone().unwrap();
+        if cmd.contains(query) {
+            command_contains = true;
         }
     }
-    Ok(commands)
+
+    if command.description.is_some() {
+        let des = command.description.clone().unwrap();
+        if des.contains(query) {
+            command_contains = true;
+        }
+    }
+
+    if command.examples.len() > 0 {
+        for exa in command.examples.iter() {
+            if exa.is_some() {
+                let e = exa.clone().unwrap();
+                if e.contains(query) {
+                    command_contains = true;
+                }
+            }
+        }
+    }
+
+    if command.gotchas.is_some() {
+        let got = command.gotchas.clone().unwrap();
+        if got.contains(query) {
+            command_contains = true;
+        }
+    }
+
+    command_contains
 }
 
 fn check_field_for_query(
@@ -77,7 +76,7 @@ fn check_field_for_query(
     query: &String,
     cmd: String,
     des: String,
-    exa: String,
+    examples: Vec<Option<String>>,
     got: String,
 ) -> bool {
     let mut add_command = false;
@@ -92,11 +91,16 @@ fn check_field_for_query(
             add_command = true;
         }
     }
-    if command.example.is_some() {
-        if exa.contains(query) {
-            add_command = true;
+    if examples.len() > 0 {
+        for example in examples.iter() {
+            if example.is_some() {
+                if example.as_ref().unwrap().contains(query) {
+                    add_command = true;
+                }
+            }
         }
     }
+
     if command.gotchas.is_some() {
         if got.contains(query) {
             add_command = true;
@@ -106,24 +110,24 @@ fn check_field_for_query(
     return add_command;
 }
 
-fn set_command_from_flags(
-    command: &mut Command,
-    args: &Args,
-    cmd: String,
-    des: String,
-    exa: String,
-    got: String,
-) {
-    if args.command_off.is_none() || !args.command_off.unwrap() {
-        command.command = Some(String::from(cmd));
-    }
-    if args.descripton_off.is_none() || !args.descripton_off.unwrap() {
-        command.description = Some(String::from(des));
-    }
-    if args.example_off.is_none() || !args.example_off.unwrap() {
-        command.example = Some(String::from(exa));
-    }
-    if args.gotcha_off.is_none() || !args.gotcha_off.unwrap() {
-        command.gotchas = Some(String::from(got));
-    }
-}
+// fn set_command_from_flags(
+//     command: &mut Command,
+//     args: &Args,
+//     cmd: String,
+//     des: String,
+//     exa: String,
+//     got: String,
+// ) {
+//     if args.command_off.is_none() || !args.command_off.unwrap() {
+//         command.command = Some(String::from(cmd));
+//     }
+//     if args.descripton_off.is_none() || !args.descripton_off.unwrap() {
+//         command.description = Some(String::from(des));
+//     }
+//     if args.example_off.is_none() || !args.example_off.unwrap() {
+//         command.example = Some(String::from(exa));
+//     }
+//     if args.gotcha_off.is_none() || !args.gotcha_off.unwrap() {
+//         command.gotchas = Some(String::from(got));
+//     }
+// }
