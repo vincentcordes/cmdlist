@@ -1,3 +1,5 @@
+// Credit to some Stack Overflow guru
+// This function was helpful to understand types at first
 pub fn print_type_of<T>(_: &T) {
     println!("{}", std::any::type_name::<T>())
 }
