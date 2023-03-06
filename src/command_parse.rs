@@ -26,10 +26,15 @@ pub fn build_command_list(args: &Args, file_text: &String) -> Result<Vec<Command
         use_query = true;
         query = args.query.clone().unwrap();
     }
-
     if use_query {
         commands.retain(|c| check_command_for_query(c, &query));
     }
+
+    // Switch off what gets printed
+    let commands = commands
+        .iter()
+        .map(|c| build_command_from_args(c, args))
+        .collect();
 
     Ok(commands)
 }
@@ -71,63 +76,29 @@ fn check_command_for_query(command: &Command, query: &String) -> bool {
     command_contains
 }
 
-fn check_field_for_query(
-    command: &mut Command,
-    query: &String,
-    cmd: String,
-    des: String,
-    examples: Vec<Option<String>>,
-    got: String,
-) -> bool {
-    let mut add_command = false;
+// sets what commands get printed from args
+// print command function looks for None value
+fn build_command_from_args(command: &Command, args: &Args) -> Command {
+    let mut cmd = Command {
+        command: command.command.clone(),
+        description: command.description.clone(),
+        examples: command.examples.clone(),
+        gotchas: command.gotchas.clone(),
+    };
 
-    if command.command.is_some() {
-        if cmd.contains(query) {
-            add_command = true;
-        }
+    if args.command_off.is_some() && args.command_off.unwrap() {
+        cmd.command = None;
     }
-    if command.description.is_some() {
-        if des.contains(query) {
-            add_command = true;
-        }
+    if args.descripton_off.is_some() && args.descripton_off.unwrap() {
+        cmd.description = None;
     }
-    if examples.len() > 0 {
-        for example in examples.iter() {
-            if example.is_some() {
-                if example.as_ref().unwrap().contains(query) {
-                    add_command = true;
-                }
-            }
-        }
+    if args.example_off.is_some() && args.example_off.unwrap() {
+        // this is enough here since print command function is looking for vec length > 0
+        cmd.examples = vec![];
+    }
+    if args.gotcha_off.is_some() && args.gotcha_off.unwrap() {
+        cmd.gotchas = None;
     }
 
-    if command.gotchas.is_some() {
-        if got.contains(query) {
-            add_command = true;
-        }
-    }
-
-    return add_command;
+    cmd
 }
-
-// fn set_command_from_flags(
-//     command: &mut Command,
-//     args: &Args,
-//     cmd: String,
-//     des: String,
-//     exa: String,
-//     got: String,
-// ) {
-//     if args.command_off.is_none() || !args.command_off.unwrap() {
-//         command.command = Some(String::from(cmd));
-//     }
-//     if args.descripton_off.is_none() || !args.descripton_off.unwrap() {
-//         command.description = Some(String::from(des));
-//     }
-//     if args.example_off.is_none() || !args.example_off.unwrap() {
-//         command.example = Some(String::from(exa));
-//     }
-//     if args.gotcha_off.is_none() || !args.gotcha_off.unwrap() {
-//         command.gotchas = Some(String::from(got));
-//     }
-// }

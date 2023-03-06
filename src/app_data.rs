@@ -50,14 +50,15 @@ fn build_default_data_file(app_dir: &PathBuf) -> Result<PathBuf, Error> {
 
     if !path.is_file() {
         println!("Default data file does not exist. Attempting to build it.");
-        build_file(&path)
+        let default_data = build_default_commmands()?;
+        build_file(&default_data, &path)
             .with_context(|| format!("Unable to create default data file! {}", path.display()))?;
         println!("Default data file created at {}.", path.display());
     }
     Ok(path)
 }
 
-fn build_file(path: &PathBuf) -> Result<(), Error> {
+fn build_default_commmands() -> Result<Vec<Command>, Error> {
     let mut data: Vec<Command> = vec![];
 
     let mut examples1: Vec<Option<String>> = vec![];
@@ -66,7 +67,7 @@ fn build_file(path: &PathBuf) -> Result<(), Error> {
     examples1.push(Some(String::from("ls -a")));
     let cmd1 = Command {
         command: Some(String::from("ls")),
-        description: Some(String::from("Lists  directory contents.")),
+        description: Some(String::from("Lists directory contents.")),
         examples: examples1,
         gotchas: Some(String::from("")),
     };
@@ -82,9 +83,23 @@ fn build_file(path: &PathBuf) -> Result<(), Error> {
         gotchas: Some(String::from("")),
     };
 
+    let mut examples3: Vec<Option<String>> = vec![];
+    examples3.push(Some(String::from("cargo check")));
+    examples3.push(Some(String::from("cargo build")));
+    examples3.push(Some(String::from("cargo run")));
+    let cmd3 = Command {
+        command: Some(String::from("cargo")),
+        description: Some(String::from("Rust package manager")),
+        examples: examples3,
+        gotchas: Some(String::from("")),
+    };
     data.push(cmd1);
     data.push(cmd2);
+    data.push(cmd3);
+    Ok(data)
+}
 
+pub fn build_file(data: &Vec<Command>, path: &PathBuf) -> Result<(), Error> {
     let data_as_json = serde_json::to_string_pretty(&data)?;
     let mut file = File::create(path)?;
     file.write_all(data_as_json.as_bytes())?;

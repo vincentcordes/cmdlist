@@ -1,9 +1,11 @@
+mod add_command;
 mod app_data;
 mod arg_parse;
 mod command;
 mod command_parse;
 mod utilities;
 //use utilities::*;
+use crate::add_command::*;
 use crate::app_data::*;
 use crate::arg_parse::*;
 use crate::command::Command;
@@ -20,11 +22,15 @@ fn main() -> Result<(), Error> {
         args.path = default_path;
     }
 
-    let commands =
+    let mut commands =
         parse_commands(&args).with_context(|| format!("Failed to build command list!"))?;
 
-    for cmd in commands {
-        Command::print_command(cmd);
+    if args.add.is_some() && args.add.unwrap() {
+        add_command(&mut commands, &args.path.unwrap())?;
+    } else {
+        for cmd in commands {
+            Command::print_command(cmd);
+        }
     }
 
     Ok(())
