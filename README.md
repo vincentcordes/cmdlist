@@ -2,5 +2,4 @@
 
 A basic cli program to help with easily forgotten commands.
 
-run
-cmdlist -h
+run 'cmdlist -h' to see all arguments
