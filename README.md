@@ -1,5 +1,3 @@
 # cmdlist
 
-A basic cli program to help with easily forgotten commands.
-
-run 'cmdlist -h' to see all arguments
+A cross platform cli program to help keep track of commands.
